@@ -4,8 +4,8 @@
   "functions": {
     "api/[[...slug]].js": {
       "runtime": "nodejs20.x",
-      "memory": 3008,
-      "maxDuration": 60
+      "memory": 1024,
+      "maxDuration": 30
     }
   },
   "env": {

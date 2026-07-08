@@ -1,0 +1,7 @@
+node_modules/
+.env.example
+.git
+.gitignore
+*.md
+src/
+vite.config.mjs
