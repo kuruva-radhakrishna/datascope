@@ -13,6 +13,7 @@ const { generateSeedCSV } = require('./seedgen.js');
 const { buildReport } = require('./report.js');
 const { buildXlsx } = require('./xlsx.js');
 const { headSheets, resultSheets } = require('./export.js');
+const { hashPassword, verifyPassword, generateToken, verifyToken, extractToken } = require('./auth.js');
 
 const MAX_CSV_BYTES = 4 * 1024 * 1024; // Vercel serverless body limit
 
@@ -80,6 +81,42 @@ async function route(method, pathname, body, query = {}) {
   // GET /api/health
   if (method === 'GET' && parts[1] === 'health' && parts.length === 2) {
     return json(200, { ok: true, storage: store.storageMode(), llm: llmConfigured() ? 'bifrost' : 'fallback' });
+  }
+
+  // POST /api/auth/register { email, password, name }
+  if (method === 'POST' && parts[1] === 'auth' && parts[2] === 'register') {
+    if (!body || !body.email || !body.password) return badRequest('email and password required');
+    if (body.password.length < 6) return badRequest('password must be at least 6 characters');
+    if (!body.email.includes('@')) return badRequest('invalid email');
+    try {
+      const hash = await hashPassword(body.password);
+      const user = await store.createUser(body.email, hash, body.name);
+      const token = generateToken(user._id, user.email);
+      return json(200, { user, token });
+    } catch (err) {
+      return badRequest(err.message);
+    }
+  }
+
+  // POST /api/auth/login { email, password }
+  if (method === 'POST' && parts[1] === 'auth' && parts[2] === 'login') {
+    if (!body || !body.email || !body.password) return badRequest('email and password required');
+    const user = await store.getUserByEmail(body.email);
+    if (!user) return json(401, { error: 'Invalid email or password' });
+    const match = await verifyPassword(body.password, user.password);
+    if (!match) return json(401, { error: 'Invalid email or password' });
+    const token = generateToken(user._id, user.email);
+    return json(200, { user: { _id: user._id, email: user.email, name: user.name }, token });
+  }
+
+  // GET /api/auth/me — get current user
+  if (method === 'GET' && parts[1] === 'auth' && parts[2] === 'me' && parts.length === 3) {
+    const authHeader = (query.Authorization || '');
+    const token = extractToken(authHeader);
+    if (!token) return json(401, { error: 'unauthorized' });
+    const payload = verifyToken(token);
+    if (!payload) return json(401, { error: 'invalid token' });
+    return json(200, { userId: payload.userId, email: payload.email });
   }
 
   // GET /api/seed.csv — download the bundled demo file

@@ -1,8 +1,8 @@
 {
-  "name": "datascope",
+  "name": "datadive",
   "version": "1.0.0",
   "private": true,
-  "description": "DataScope — upload a CSV, get an instant data profile with quality flags, run real hypothesis tests, and chat with an AI about the data.",
+  "description": "DataDive — upload a CSV, get an instant data profile with quality flags, run real hypothesis tests, and chat with an AI about the data.",
   "scripts": {
     "dev:backend": "node backend/server.js",
     "dev:frontend": "vite",

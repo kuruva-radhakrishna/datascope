@@ -1,9 +1,16 @@
 // All backend access goes through same-origin /api paths — never a hardcoded host.
 
-async function req(method, path, body) {
+async function req(method, path, body, options = {}) {
+  const headers = { ...options.headers };
+  if (body) headers['content-type'] = 'application/json';
+
+  // Add auth token if available
+  const token = localStorage.getItem('datadive_token');
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
   const res = await fetch(path, {
     method,
-    headers: body ? { 'content-type': 'application/json' } : undefined,
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));
@@ -35,6 +42,15 @@ async function downloadBlob(method, path, body, fallbackName) {
 }
 
 export const api = {
+  // Auth
+  register: (email, password, name) => req('POST', '/api/auth/register', { email, password, name }),
+  login: (email, password) => req('POST', '/api/auth/login', { email, password }),
+  getMe: () => req('GET', '/api/auth/me'),
+  logout: () => localStorage.removeItem('datadive_token'),
+  setToken: (token) => localStorage.setItem('datadive_token', token),
+  getToken: () => localStorage.getItem('datadive_token'),
+
+  // Datasets
   listDatasets: () => req('GET', '/api/datasets'),
   getDataset: (id) => req('GET', `/api/datasets/${id}`),
   uploadCSV: (name, csv) => req('POST', '/api/datasets', { name, csv }),

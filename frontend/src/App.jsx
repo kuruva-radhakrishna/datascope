@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { api } from './api.js';
+import { LoginForm } from './auth.jsx';
 import {
   DatasetList, QualityHeader, Insights, ColumnCard, Anomalies,
   Correlations, TestForm, ResultCard, ChatPanel, ChatAnalysisCard, DataHead,
 } from './components.jsx';
 
 export default function App() {
+  const [user, setUser] = useState(null);
   const [datasets, setDatasets] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [dataset, setDataset] = useState(null);
@@ -17,6 +19,14 @@ export default function App() {
   const [uploading, setUploading] = useState(false);
   const [chatBusy, setChatBusy] = useState(false);
   const [error, setError] = useState(null);
+
+  // Check for existing user session on mount
+  useEffect(() => {
+    const token = api.getToken();
+    if (token) {
+      setUser({ email: 'User', name: 'User' });
+    }
+  }, []);
 
   const refresh = useCallback(async (selectId) => {
     try {
@@ -30,7 +40,9 @@ export default function App() {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    if (user) refresh();
+  }, [refresh, user]);
 
   useEffect(() => {
     if (!selectedId) { setDataset(null); return; }
@@ -88,10 +100,15 @@ export default function App() {
     }
   };
 
+  // Show login form if not authenticated
+  if (!user) {
+    return <LoginForm onSuccess={setUser} />;
+  }
+
   return (
     <div className="app">
       <header className="topbar">
-        <div className="logo">🔬 <strong>DataScope</strong> <span className="muted">— drop a CSV, get answers you can defend</span></div>
+        <div className="logo">🔬 <strong>DataDive</strong> <span className="muted">— drop a CSV, get answers you can defend</span></div>
         <div className="status">
           <span className={`mode-badge ${status.storage === 'mongodb' ? 'llm' : 'rule'}`} title="where datasets are stored">db: {status.storage}</span>
         </div>
@@ -105,7 +122,7 @@ export default function App() {
         <main className="pane pane-center">
           {!dataset ? (
             <div className="empty-state">
-              <h2>Welcome to DataScope</h2>
+              <h2>Welcome to DataDive</h2>
               <p>Upload any CSV to get an instant profile: column types, quality score, anomalies — then test your hypotheses with real statistics.</p>
             </div>
           ) : (

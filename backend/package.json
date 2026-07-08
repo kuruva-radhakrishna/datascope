@@ -1,0 +1,17 @@
+{
+  "name": "datadive-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DataDive Backend API - CSV analysis engine",
+  "scripts": {
+    "dev": "node server.js",
+    "test": "node --test test/stats.test.js test/pipeline.test.js test/export.test.js test/store.test.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.8.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=20"
+  }
+}

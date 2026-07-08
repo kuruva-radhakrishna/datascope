@@ -14,7 +14,7 @@ let mode = 'memory';
 let initPromise = null;
 
 // in-memory fallback
-const mem = { datasets: new Map(), rows: new Map(), chats: new Map() };
+const mem = { datasets: new Map(), rows: new Map(), chats: new Map(), users: new Map() };
 
 async function tryConnect(uri) {
   const { MongoClient } = require('mongodb');
@@ -168,4 +168,48 @@ async function countDatasets() {
   return mem.datasets.size;
 }
 
-module.exports = { init, storageMode, listDatasets, getDataset, createDataset, createDatasetIfAbsent, getRows, deleteDataset, getChat, appendChat, countDatasets };
+// User management
+async function getUserByEmail(email) {
+  await init();
+  if (mode === 'mongodb') {
+    return db.collection('users').findOne({ email: email.toLowerCase() });
+  }
+  for (const user of mem.users.values()) {
+    if (user.email.toLowerCase() === email.toLowerCase()) return user;
+  }
+  return null;
+}
+
+async function createUser(email, hashedPassword, name = '') {
+  await init();
+  const userId = crypto.randomUUID();
+  const user = {
+    _id: userId,
+    email: email.toLowerCase(),
+    password: hashedPassword,
+    name: name || email.split('@')[0],
+    createdAt: new Date().toISOString(),
+  };
+
+  if (mode === 'mongodb') {
+    try {
+      await db.collection('users').insertOne(user);
+      await db.collection('users').createIndex({ email: 1 }, { unique: true }).catch(() => {});
+    } catch (err) {
+      if (err.code === 11000) {
+        throw new Error('Email already registered');
+      }
+      throw err;
+    }
+  } else {
+    const existing = await getUserByEmail(email);
+    if (existing) {
+      throw new Error('Email already registered');
+    }
+    mem.users.set(userId, user);
+  }
+
+  return { _id: user._id, email: user.email, name: user.name };
+}
+
+module.exports = { init, storageMode, listDatasets, getDataset, createDataset, createDatasetIfAbsent, getRows, deleteDataset, getChat, appendChat, countDatasets, getUserByEmail, createUser };

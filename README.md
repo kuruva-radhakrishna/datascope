@@ -1,8 +1,8 @@
-# 🔬 DataScope
+# 🔬 DataDive
 
 **Drop a CSV, get answers you can defend.**
 
-Analysts get messy CSVs every day. DataScope gives you an instant data profile (column types, quality score 0–100, anomalies, auto-insights), lets you run *real* statistical hypothesis tests, and lets you chat with an AI about the data — where the statistics are always computed deterministically by the backend and the AI only narrates them.
+Analysts get messy CSVs every day. DataDive gives you an instant data profile (column types, quality score 0–100, anomalies, auto-insights), lets you run *real* statistical hypothesis tests, and lets you chat with an AI about the data — where the statistics are always computed deterministically by the backend and the AI only narrates them.
 
 ## What makes it different
 
@@ -39,11 +39,11 @@ npm test
 ## Docker (single judging image)
 
 ```
-docker build -t datascope:final ^
+docker build -t datadive:final ^
   --build-arg MONGODB_URI="<from .env>" ^
   --build-arg MONGODB_URI_FALLBACK="<from .env>" ^
   --build-arg BIFROST_API_KEY="<from .env>" .
-docker run --rm -p 9080:9080 -p 8090:8090 datascope:final
+docker run --rm -p 9080:9080 -p 8090:8090 datadive:final
 ```
 
 nginx serves the frontend on **9080** and proxies `/api/` to the backend on **8090**. Judges run the image with no env vars — connection values are baked at build time (never committed to the repo).
