@@ -27,16 +27,24 @@ const DEMO_QA = [
   { q: 'Top 5 states by average price', intent: { action: 'aggregate', groupBy: 'state', agg: 'mean', metric: 'price', topN: 5, trim: true } },
 ];
 
+// Fixed id (not random) so seeding is safe under concurrent serverless cold
+// starts: every instance tries the same insert, MongoDB's unique _id index
+// lets exactly one succeed, and the rest see a harmless duplicate-key error.
+// A random id here previously let two racing instances each seed their own
+// copy, leaving the frontend holding a dataset id that lost the race and was
+// never actually the one left in the "current" list — a 404 on first load.
+const SEED_ID = 'seed-meesho-orders-demo';
+
 let seedPromise = null;
 function ensureSeed() {
   if (!seedPromise) {
     seedPromise = (async () => {
       if (process.env.SEED_DEMO === '0') return;
-      if ((await store.countDatasets()) > 0) return;
       const csv = generateSeedCSV();
       const { headers, rows } = parseCSV(csv);
       const profile = buildProfile(headers, rows);
-      const ds = await store.createDataset({ name: 'meesho_orders.csv (demo)', headers, rows, profile });
+      const ds = await store.createDatasetIfAbsent(SEED_ID, { name: 'meesho_orders.csv (demo)', headers, rows, profile });
+      if (!ds) return; // another instance already seeded it — nothing to do
       const now = new Date().toISOString();
       const messages = [];
       for (const { q, intent } of DEMO_QA) {

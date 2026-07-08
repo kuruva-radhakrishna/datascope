@@ -8,7 +8,7 @@
     "dev:frontend": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test backend/test/stats.test.js backend/test/pipeline.test.js backend/test/export.test.js"
+    "test": "node --test backend/test/stats.test.js backend/test/pipeline.test.js backend/test/export.test.js backend/test/store.test.js"
   },
   "dependencies": {
     "mongodb": "^6.8.0"

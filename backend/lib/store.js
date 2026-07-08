@@ -76,9 +76,7 @@ async function getDataset(id) {
   return d ? { ...d } : null;
 }
 
-async function createDataset({ name, headers, rows, profile }) {
-  await init();
-  const id = crypto.randomUUID();
+async function insertDataset(id, { name, headers, rows, profile }) {
   const createdAt = new Date().toISOString();
   const meta = { name, createdAt, headers, rowCount: rows.length, columnCount: headers.length, profile };
   if (mode === 'mongodb') {
@@ -93,6 +91,31 @@ async function createDataset({ name, headers, rows, profile }) {
     mem.rows.set(id, rows);
   }
   return { id, ...meta };
+}
+
+async function createDataset(fields) {
+  await init();
+  return insertDataset(crypto.randomUUID(), fields);
+}
+
+// Atomic "insert if this id doesn't exist yet" — used for seeding a fixed-id
+// demo dataset safely across concurrent serverless cold starts. Two instances
+// racing to seed at once will both attempt the same insert; MongoDB's unique
+// _id index lets exactly one succeed, and the loser gets a duplicate-key
+// error (code 11000) here, which we treat as "already seeded" rather than
+// a real failure. Returns the created dataset, or null if it already existed.
+async function createDatasetIfAbsent(id, fields) {
+  await init();
+  if (mode === 'mongodb') {
+    try {
+      return await insertDataset(id, fields);
+    } catch (err) {
+      if (err && err.code === 11000) return null;
+      throw err;
+    }
+  }
+  if (mem.datasets.has(id)) return null;
+  return insertDataset(id, fields);
 }
 
 async function getRows(id) {
@@ -145,4 +168,4 @@ async function countDatasets() {
   return mem.datasets.size;
 }
 
-module.exports = { init, storageMode, listDatasets, getDataset, createDataset, getRows, deleteDataset, getChat, appendChat, countDatasets };
+module.exports = { init, storageMode, listDatasets, getDataset, createDataset, createDatasetIfAbsent, getRows, deleteDataset, getChat, appendChat, countDatasets };
