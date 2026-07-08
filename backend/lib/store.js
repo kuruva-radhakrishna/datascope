@@ -55,15 +55,15 @@ function storageMode() { return mode; }
 async function listDatasets(userId = null) {
   await init();
   if (mode === 'mongodb') {
-    // Get user's datasets + demo/seed datasets only
-    const query = userId ? { $or: [{ userId }, { isDemo: true }] } : {};
+    // Get user's datasets + demo/seed datasets (check both isDemo flag and name)
+    const query = userId ? { $or: [{ userId }, { isDemo: true }, { name: /\(demo\)/ }] } : {};
     const docs = await db.collection('datasets')
       .find(query, { projection: { name: 1, createdAt: 1, rowCount: 1, columnCount: 1, quality: 1, userId: 1 } })
       .sort({ createdAt: -1 }).toArray();
     return docs.map((d) => ({ id: d._id, name: d.name, createdAt: d.createdAt, rowCount: d.rowCount, columnCount: d.columnCount, qualityScore: d.quality }));
   }
   return [...mem.datasets.values()]
-    .filter(d => !userId || d.userId === userId || d.isDemo)
+    .filter(d => !userId || d.userId === userId || d.isDemo || d.name.includes('(demo)'))
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .map((d) => ({ id: d.id, name: d.name, createdAt: d.createdAt, rowCount: d.rowCount, columnCount: d.columnCount, qualityScore: d.profile.quality.score }));
 }
