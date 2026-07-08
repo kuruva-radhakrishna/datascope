@@ -17,9 +17,30 @@ const { hashPassword, verifyPassword, generateToken, verifyToken, extractToken }
 
 const MAX_CSV_BYTES = 4 * 1024 * 1024; // Vercel serverless body limit
 
+// Generate suggested questions based on dataset columns
+function generateSuggestedQuestions(profile) {
+  const suggestions = [];
+  const numericCols = profile.columns.filter(c => c.type === 'number').map(c => c.name);
+  const categoricalCols = profile.columns.filter(c => c.type === 'string').map(c => c.name);
+
+  if (numericCols.length >= 2) {
+    suggestions.push(`Is ${numericCols[0]} correlated with ${numericCols[1]}?`);
+    suggestions.push(`Compare ${numericCols[0]} across different ${categoricalCols[0] || 'groups'}`);
+  }
+  if (categoricalCols.length >= 2) {
+    suggestions.push(`Is ${categoricalCols[0]} related to ${categoricalCols[1]}?`);
+  }
+  if (numericCols.length > 0 && categoricalCols.length > 0) {
+    suggestions.push(`Average ${numericCols[0]} by ${categoricalCols[0]}`);
+  }
+  if (numericCols.length > 0) {
+    suggestions.push(`What are the outliers in ${numericCols[0]}?`);
+  }
+
+  return suggestions.slice(0, 4);
+}
+
 // Demo conversation: the full analyst toolkit, one question per test type.
-// Answers are computed locally and templated, so every visitor sees a complete
-// worked example the moment they open the app.
 const DEMO_QA = [
   { q: 'Is return rate different between couriers?', intent: { action: 'chisq', col1: 'courier', col2: 'returned' } },
   { q: 'Compare price between Karnataka and Maharashtra', intent: { action: 'ttest', metric: 'price', groupCol: 'state', groups: ['Karnataka', 'Maharashtra'], trim: true } },
@@ -140,7 +161,14 @@ async function route(method, pathname, body, query = {}) {
 
   // GET /api/datasets
   if (method === 'GET' && parts.length === 2) {
-    return json(200, { datasets: await store.listDatasets(), storage: store.storageMode(), llm: llmConfigured() ? 'bifrost' : 'fallback' });
+    let userId = null;
+    const authHeader = (query.Authorization || '');
+    const token = extractToken(authHeader);
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) userId = payload.userId;
+    }
+    return json(200, { datasets: await store.listDatasets(userId), storage: store.storageMode(), llm: llmConfigured() ? 'bifrost' : 'fallback' });
   }
 
   // POST /api/datasets  { name, csv }
@@ -160,11 +188,21 @@ async function route(method, pathname, body, query = {}) {
     if (parsed.rows.length === 0) return badRequest('CSV has a header but no data rows');
     if (parsed.rows.length > 100000) return badRequest('CSV has more than 100,000 rows — too large for this tool');
     const profile = buildProfile(parsed.headers, parsed.rows);
+
+    let userId = null;
+    const authHeader = (query.Authorization || '');
+    const token = extractToken(authHeader);
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) userId = payload.userId;
+    }
+
     const ds = await store.createDataset({
       name: (typeof name === 'string' && name.trim()) || 'uploaded.csv',
       headers: parsed.headers,
       rows: parsed.rows,
       profile,
+      userId,
     });
     return json(201, { id: ds.id, name: ds.name, rowCount: ds.rowCount, profile });
   }

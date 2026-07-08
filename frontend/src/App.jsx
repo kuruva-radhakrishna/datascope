@@ -111,6 +111,33 @@ export default function App() {
         <div className="logo">🔬 <strong>DataDive</strong> <span className="muted">— drop a CSV, get answers you can defend</span></div>
         <div className="status">
           <span className={`mode-badge ${status.storage === 'mongodb' ? 'llm' : 'rule'}`} title="where datasets are stored">db: {status.storage}</span>
+          {user && user.email && (
+            <>
+              <span style={{marginLeft: '15px', color: '#666', fontSize: '12px'}}>
+                {user.email === 'User' ? 'Demo Mode' : user.email}
+              </span>
+              <button
+                onClick={() => {
+                  api.logout();
+                  setUser(null);
+                  setDatasets([]);
+                  setSelectedId(null);
+                }}
+                style={{
+                  marginLeft: '10px',
+                  padding: '4px 12px',
+                  fontSize: '12px',
+                  backgroundColor: '#f0f0f0',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }}
+              >
+                Exit
+              </button>
+            </>
+          )}
         </div>
       </header>
       {error && <div className="error-bar">{error} <button onClick={() => setError(null)}>×</button></div>}
