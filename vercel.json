@@ -4,7 +4,7 @@
   "outputDirectory": "frontend/dist",
   "framework": null,
   "functions": {
-    "backend/api/[[...slug]].js": {
+    "api/[[...slug]].js": {
       "memory": 1024,
       "maxDuration": 30
     }
