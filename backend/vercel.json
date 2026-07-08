@@ -8,14 +8,6 @@
       "maxDuration": 30
     }
   },
-  "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "MONGODB_DB": "@mongodb_db",
-    "BIFROST_API_KEY": "@bifrost_api_key",
-    "BIFROST_URL": "@bifrost_url",
-    "BIFROST_MODEL": "@bifrost_model",
-    "SEED_DEMO": "@seed_demo"
-  },
   "headers": [
     {
       "source": "/api(.*)",
