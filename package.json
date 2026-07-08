@@ -1,0 +1,22 @@
+{
+  "name": "datascope",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DataScope — upload a CSV, get an instant data profile with quality flags, run real hypothesis tests, and chat with an AI about the data.",
+  "scripts": {
+    "dev:backend": "node backend/server.js",
+    "dev:frontend": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test backend/test/stats.test.js backend/test/pipeline.test.js backend/test/export.test.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.8.0"
+  },
+  "devDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.0"
+  }
+}

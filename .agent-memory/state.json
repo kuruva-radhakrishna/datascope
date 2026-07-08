@@ -1,0 +1,24 @@
+﻿{
+  "project_name": "DataScope",
+  "app_idea": "Upload a CSV, get an instant data profile with quality score/flags/anomalies/auto-insights, run real hypothesis tests (Welch t, chi-square, ANOVA, correlation) computed deterministically in Node, and chat about the data via the Bifrost gateway (gpt-4o) with a rule-based offline fallback. LLM sees aggregates only, never raw rows.",
+  "frontend_port": 9080,
+  "backend_port": 8090,
+  "frontend_framework": "React (Vite 5)",
+  "backend_language": "Node.js (plain node:http, only dependency: mongodb driver)",
+  "database": "MongoDB Atlas (cluster0.czsbykb) with in-memory failsafe; NON-STANDARD vs default SQLite by participant request for Vercel compatibility",
+  "participant_email": "kuruva.radhakrishna@meesho.com",
+  "team_id": "kuruva-radhakrishna",
+  "image_tag": "datascope:final (not built yet â€” Docker not installed)",
+  "registry_url": "",
+  "registry_proxy_host": "registry.buildathon.meesho.dev",
+  "registry_login_user": "hackathon",
+  "last_pushed_image": "",
+  "last_pushed_tag": "",
+  "code_zip": "",
+  "last_successful_step": "app fully working locally: 16/16 tests pass, Mongo connected (via MONGODB_URI_FALLBACK non-SRV URI, office network blocks Node SRV DNS), Bifrost LLM chat verified end-to-end in UI, production frontend build succeeds",
+  "current_status": "build complete; deployment pending",
+  "current_blocker": "Docker not installed (needed for judging image); Vercel CLI login needed for public app link",
+  "next_action": "1) vercel login + deploy with env vars, 2) install container engine, docker build with --build-arg secrets from .env, smoke test, push via organizer proxy, 3) zip code",
+  "last_updated": "2026-07-08T06:25:00Z"
+}
+

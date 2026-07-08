@@ -1,0 +1,16 @@
+node_modules
+frontend/node_modules
+frontend/dist
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+data
+.agent-memory
+.vercel
+scripts
+deploy
+*.zip
+*.tar.gz
+*.log

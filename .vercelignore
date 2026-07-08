@@ -1,0 +1,10 @@
+Dockerfile
+docker
+scripts
+deploy
+*.tar.gz
+backend/server.js
+backend/test
+.agent-memory
+data
+*.zip
