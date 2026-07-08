@@ -79,7 +79,7 @@ export function DatasetList({ datasets, selectedId, onSelect, onUpload, onDelete
               {d.rowCount} rows · {d.columnCount} cols
               {typeof d.qualityScore === 'number' && <span className={`chip-score s${d.qualityScore >= 80 ? 'good' : d.qualityScore >= 55 ? 'warn' : 'bad'}`}>{d.qualityScore}</span>}
             </div>
-            <button className="btn-x" title="Delete dataset" onClick={(e) => { e.stopPropagation(); onDelete(d.id); }}>×</button>
+            {!d.name.includes('(demo)') && <button className="btn-x" title="Delete dataset" onClick={(e) => { e.stopPropagation(); onDelete(d.id); }}>×</button>}
           </div>
         ))}
         {datasets.length === 0 && <p className="muted">No datasets yet — upload a CSV to begin.</p>}

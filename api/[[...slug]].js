@@ -14,7 +14,8 @@ module.exports = async (req, res) => {
       try { body = JSON.parse(body); } catch { /* keep raw */ }
     }
     const query = Object.fromEntries(url.searchParams);
-    const out = await route(req.method, url.pathname, body || null, query);
+    const headers = req.headers || {};
+    const out = await route(req.method, url.pathname, body || null, query, headers);
     if (out.raw !== undefined) {
       res.statusCode = out.status;
       res.setHeader('content-type', out.contentType || 'text/plain');

@@ -65,7 +65,7 @@ function ensureSeed() {
       const csv = generateSeedCSV();
       const { headers, rows } = parseCSV(csv);
       const profile = buildProfile(headers, rows);
-      const ds = await store.createDatasetIfAbsent(SEED_ID, { name: 'meesho_orders.csv (demo)', headers, rows, profile });
+      const ds = await store.createDatasetIfAbsent(SEED_ID, { name: 'meesho_orders.csv (demo)', headers, rows, profile, isDemo: true });
       if (!ds) return; // another instance already seeded it — nothing to do
       const now = new Date().toISOString();
       const messages = [];
@@ -92,12 +92,23 @@ function badRequest(msg) { return json(400, { error: msg }); }
 function notFound(msg = 'not found') { return json(404, { error: msg }); }
 
 // method + pathname + parsed JSON body (or raw string for CSV) => {status, body}
-async function route(method, pathname, body, query = {}) {
+async function route(method, pathname, body, query = {}, headers = {}) {
   await store.init();
   await ensureSeed();
 
   const parts = pathname.replace(/\/+$/, '').split('/').filter(Boolean); // e.g. ['api','datasets',':id','chat']
   if (parts[0] !== 'api') return notFound();
+
+  // Extract userId from Authorization header
+  const getAuth = () => {
+    const authHeader = headers.authorization || '';
+    const token = extractToken(authHeader);
+    if (token) {
+      const payload = verifyToken(token);
+      if (payload) return payload.userId;
+    }
+    return null;
+  };
 
   // GET /api/health
   if (method === 'GET' && parts[1] === 'health' && parts.length === 2) {
@@ -161,13 +172,7 @@ async function route(method, pathname, body, query = {}) {
 
   // GET /api/datasets
   if (method === 'GET' && parts.length === 2) {
-    let userId = null;
-    const authHeader = (query.Authorization || '');
-    const token = extractToken(authHeader);
-    if (token) {
-      const payload = verifyToken(token);
-      if (payload) userId = payload.userId;
-    }
+    const userId = getAuth();
     return json(200, { datasets: await store.listDatasets(userId), storage: store.storageMode(), llm: llmConfigured() ? 'bifrost' : 'fallback' });
   }
 
@@ -189,13 +194,7 @@ async function route(method, pathname, body, query = {}) {
     if (parsed.rows.length > 100000) return badRequest('CSV has more than 100,000 rows — too large for this tool');
     const profile = buildProfile(parsed.headers, parsed.rows);
 
-    let userId = null;
-    const authHeader = (query.Authorization || '');
-    const token = extractToken(authHeader);
-    if (token) {
-      const payload = verifyToken(token);
-      if (payload) userId = payload.userId;
-    }
+    const userId = getAuth();
 
     const ds = await store.createDataset({
       name: (typeof name === 'string' && name.trim()) || 'uploaded.csv',
