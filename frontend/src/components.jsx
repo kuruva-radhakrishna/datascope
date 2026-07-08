@@ -397,7 +397,7 @@ export function TestForm({ dataset, onResult }) {
   );
 }
 
-const EXAMPLE_CHIPS = [
+const DEFAULT_CHIPS = [
   'Is return rate different between couriers?',
   'Compare price between Karnataka and Maharashtra',
   'Is shipping fee related to price?',
@@ -410,6 +410,8 @@ export function ChatPanel({ dataset, messages, onSend, busy, llmMode, onVisualiz
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, busy]);
+
+  const suggestions = dataset?.suggestions || DEFAULT_CHIPS;
 
   const send = (text) => {
     const q = (text || input).trim();
@@ -452,7 +454,7 @@ export function ChatPanel({ dataset, messages, onSend, busy, llmMode, onVisualiz
         {busy && <div className="msg msg-assistant"><div className="msg-body typing">analyzing…</div></div>}
       </div>
       <div className="chips">
-        {EXAMPLE_CHIPS.map((c) => (
+        {suggestions.map((c) => (
           <button key={c} className="chip" onClick={() => send(c)} disabled={busy || !dataset}>{c}</button>
         ))}
       </div>

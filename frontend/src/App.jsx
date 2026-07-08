@@ -113,8 +113,8 @@ export default function App() {
           <span className={`mode-badge ${status.storage === 'mongodb' ? 'llm' : 'rule'}`} title="where datasets are stored">db: {status.storage}</span>
           {user && user.email && (
             <>
-              <span style={{marginLeft: '15px', color: '#666', fontSize: '12px'}}>
-                {user.email === 'User' ? 'Demo Mode' : user.email}
+              <span style={{marginLeft: '15px', color: '#fff', fontSize: '12px', fontWeight: 'bold', backgroundColor: '#9c27b0', padding: '4px 10px', borderRadius: '4px'}}>
+                {user.email === 'User' ? 'Demo' : user.name || user.email.split('@')[0]}
               </span>
               <button
                 onClick={() => {
@@ -127,11 +127,13 @@ export default function App() {
                   marginLeft: '10px',
                   padding: '4px 12px',
                   fontSize: '12px',
-                  backgroundColor: '#f0f0f0',
-                  border: '1px solid #ddd',
+                  backgroundColor: '#fff',
+                  color: '#333',
+                  border: 'none',
                   borderRadius: '4px',
                   cursor: 'pointer',
-                  fontFamily: 'inherit'
+                  fontFamily: 'inherit',
+                  fontWeight: 'bold'
                 }}
               >
                 Exit

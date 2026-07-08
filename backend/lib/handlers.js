@@ -213,7 +213,10 @@ async function route(method, pathname, body, query = {}) {
   if (!dataset) return notFound('dataset not found');
 
   // GET /api/datasets/:id
-  if (method === 'GET' && parts.length === 3) return json(200, dataset);
+  if (method === 'GET' && parts.length === 3) {
+    const suggestions = generateSuggestedQuestions(dataset.profile);
+    return json(200, { ...dataset, suggestions });
+  }
 
   // GET /api/datasets/:id/report — downloadable self-contained HTML report
   if (method === 'GET' && parts[3] === 'report') {
