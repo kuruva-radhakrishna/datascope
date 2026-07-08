@@ -1,6 +1,4 @@
 {
-  "buildCommand": "npm install",
-  "outputDirectory": null,
   "functions": {
     "api/[[...slug]].js": {
       "memory": 1024,
